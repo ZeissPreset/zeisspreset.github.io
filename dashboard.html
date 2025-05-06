@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Itemku Content Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard">
+        <div class="dashboard-header">
+            <div class="header-content">
+                <h1>Itemku Content Hub</h1>
+                <p>Discover exclusive content from Itemku Marketplace</p>
+                <div class="total-views">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Total Views: <span id="totalViewsCounter">0</span></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="boxes-container">
+            <!-- Box 1 -->
+            <div class="box" data-content-id="itemku1">
+                <div class="box-header">
+                    <div class="badge new">New</div>
+                    <div class="engagement">
+                        <span class="views"><i class="fas fa-eye"></i> <span class="view-count">0</span></span>
+                        <span class="likes"><i class="far fa-heart"></i> 42</span>
+                    </div>
+                </div>
+                <div class="video-container">
+                    <video class="dashboard-video" poster="assets/placeholder1.jpg">
+                        <source src="video/main.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="controls">
+                        <button class="play-pause-btn"><i class="fas fa-play"></i></button>
+                        <div class="progress-container">
+                            <div class="progress-bar"></div>
+                        </div>
+                        <div class="time-display">0:00 / 0:00</div>
+                        <button class="fullscreen-btn"><i class="fas fa-expand"></i></button>
+                    </div>
+                </div>
+                <div class="box-content">
+                    <h3 class="box-title">Itemku Gaming Products</h3>
+                    <p class="box-description">
+                        Explore the latest gaming products and in-game items available on Itemku marketplace.
+                    </p>
+                    <div class="box-footer">
+                        <a href="https://itemku.com" class="box-button view-button" target="_blank">
+                            <i class="fas fa-external-link-alt"></i> Visit Itemku
+                        </a>
+                        <div class="rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Box 2 -->
+            <div class="box" data-content-id="itemku2">
+                <div class="box-header">
+                    <div class="badge premium">Premium</div>
+                    <div class="engagement">
+                        <span class="views"><i class="fas fa-eye"></i> <span class="view-count">0</span></span>
+                        <span class="likes"><i class="far fa-heart"></i> 128</span>
+                    </div>
+                </div>
+                <div class="video-container">
+                    <video class="dashboard-video" poster="assets/placeholder2.jpg">
+                        <source src="video/main.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="controls">
+                        <button class="play-pause-btn"><i class="fas fa-play"></i></button>
+                        <div class="progress-container">
+                            <div class="progress-bar"></div>
+                        </div>
+                        <div class="time-display">0:00 / 0:00</div>
+                        <button class="fullscreen-btn"><i class="fas fa-expand"></i></button>
+                    </div>
+                </div>
+                <div class="box-content">
+                    <h3 class="box-title">Exclusive Itemku Deals</h3>
+                    <p class="box-description">
+                        Get access to premium deals and limited-time offers only available on Itemku.
+                    </p>
+                    <div class="box-footer">
+                        <a href="https://itemku.com" class="box-button view-button" target="_blank">
+                            <i class="fas fa-external-link-alt"></i> Get Deals
+                        </a>
+                        <div class="rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Box 3 -->
+            <div class="box" data-content-id="itemku3">
+                <div class="box-header">
+                    <div class="badge trending">Trending</div>
+                    <div class="engagement">
+                        <span class="views"><i class="fas fa-eye"></i> <span class="view-count">0</span></span>
+                        <span class="likes"><i class="far fa-heart"></i> 256</span>
+                    </div>
+                </div>
+                <div class="video-container">
+                    <video class="dashboard-video" poster="assets/placeholder3.jpg">
+                        <source src="video/main.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="controls">
+                        <button class="play-pause-btn"><i class="fas fa-play"></i></button>
+                        <div class="progress-container">
+                            <div class="progress-bar"></div>
+                        </div>
+                        <div class="time-display">0:00 / 0:00</div>
+                        <button class="fullscreen-btn"><i class="fas fa-expand"></i></button>
+                    </div>
+                </div>
+                <div class="box-content">
+                    <h3 class="box-title">Itemku Top Sellers</h3>
+                    <p class="box-description">
+                        Discover the most popular items and top sellers on Itemku marketplace this week.
+                    </p>
+                    <div class="box-footer">
+                        <a href="https://itemku.com" class="box-button view-button" target="_blank">
+                            <i class="fas fa-external-link-alt"></i> See Top Items
+                        </a>
+                        <div class="rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="far fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Confirmation Modal -->
+    <div class="modal" id="viewModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Redirecting to Itemku</h2>
+            <p>You're being redirected to Itemku.com. Thank you for your interest!</p>
+            <div class="modal-views">
+                <i class="fas fa-eye"></i>
+                <span>Total Views: <span id="modalViewCount">0</span></span>
+            </div>
+            <button class="modal-button">Continue to Itemku</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
