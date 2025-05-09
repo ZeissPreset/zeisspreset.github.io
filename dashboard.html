@@ -9,6 +9,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <i class="fas fa-store"></i>
+            <span>Itemku</span>
+        </div>
+        <div class="navbar-items">
+            <div class="user-info">
+                <span id="usernameDisplay"></span>
+                <span class="badge premium" id="userBadge">Free</span>
+            </div>
+            <button class="logout-btn" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </nav>
+
     <div class="dashboard">
         <div class="dashboard-header">
             <div class="header-content">
@@ -28,7 +45,7 @@
                     <div class="badge new">New</div>
                     <div class="engagement">
                         <span class="views"><i class="fas fa-eye"></i> <span class="view-count">0</span></span>
-                        <span class="likes"><i class="far fa-heart"></i> 42</span>
+                        <span class="likes"><i class="far fa-heart like-btn"></i> <span class="like-count">42</span></span>
                     </div>
                 </div>
                 <div class="video-container">
@@ -62,21 +79,40 @@
                             <i class="fas fa-star-half-alt"></i>
                         </div>
                     </div>
+                    
+                    <div class="comments-section">
+                        <h4>Comments</h4>
+                        <div class="comments-container"></div>
+                        <form class="comment-form">
+                            <textarea class="comment-input" placeholder="Add a comment..." required></textarea>
+                            <button type="submit" class="comment-submit">Post Comment</button>
+                        </form>
+                    </div>
+                    
+                    <div class="rating-section">
+                        <h4>Rate this content</h4>
+                        <div class="rating-stars"></div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Box 2 -->
-            <div class="box" data-content-id="itemku2">
+            <!-- Box 2 (Premium Content) -->
+            <div class="box premium-content" data-content-id="itemku2">
                 <div class="box-header">
                     <div class="badge premium">Premium</div>
                     <div class="engagement">
                         <span class="views"><i class="fas fa-eye"></i> <span class="view-count">0</span></span>
-                        <span class="likes"><i class="far fa-heart"></i> 128</span>
+                        <span class="likes"><i class="far fa-heart like-btn"></i> <span class="like-count">128</span></span>
                     </div>
+                </div>
+                <div class="premium-overlay">
+                    <i class="fas fa-crown"></i>
+                    <p>Upgrade to Premium to view this content</p>
+                    <button class="upgrade-btn" id="upgradeBtn1">Upgrade Now</button>
                 </div>
                 <div class="video-container">
                     <video class="dashboard-video" poster="assets/placeholder2.jpg">
-                        <source src="video/main.mp4" type="video/mp4">
+                        <source src="video/premium.mp4" type="video/mp4">
                         Your browser does not support the video tag.
                     </video>
                     <div class="controls">
@@ -105,6 +141,20 @@
                             <i class="fas fa-star"></i>
                         </div>
                     </div>
+                    
+                    <div class="comments-section">
+                        <h4>Comments</h4>
+                        <div class="comments-container"></div>
+                        <form class="comment-form">
+                            <textarea class="comment-input" placeholder="Add a comment..." required></textarea>
+                            <button type="submit" class="comment-submit">Post Comment</button>
+                        </form>
+                    </div>
+                    
+                    <div class="rating-section">
+                        <h4>Rate this content</h4>
+                        <div class="rating-stars"></div>
+                    </div>
                 </div>
             </div>
 
@@ -114,7 +164,7 @@
                     <div class="badge trending">Trending</div>
                     <div class="engagement">
                         <span class="views"><i class="fas fa-eye"></i> <span class="view-count">0</span></span>
-                        <span class="likes"><i class="far fa-heart"></i> 256</span>
+                        <span class="likes"><i class="far fa-heart like-btn"></i> <span class="like-count">256</span></span>
                     </div>
                 </div>
                 <div class="video-container">
@@ -148,6 +198,20 @@
                             <i class="far fa-star"></i>
                         </div>
                     </div>
+                    
+                    <div class="comments-section">
+                        <h4>Comments</h4>
+                        <div class="comments-container"></div>
+                        <form class="comment-form">
+                            <textarea class="comment-input" placeholder="Add a comment..." required></textarea>
+                            <button type="submit" class="comment-submit">Post Comment</button>
+                        </form>
+                    </div>
+                    
+                    <div class="rating-section">
+                        <h4>Rate this content</h4>
+                        <div class="rating-stars"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -167,6 +231,43 @@
         </div>
     </div>
 
+    <!-- Upgrade Modal -->
+    <div class="modal" id="upgradeModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Upgrade to Premium</h2>
+            <p>Get access to exclusive content and features with a Premium account.</p>
+            
+            <div class="pricing-plans">
+                <div class="plan">
+                    <h3>Monthly</h3>
+                    <div class="price">$9.99<span>/month</span></div>
+                    <ul class="features">
+                        <li><i class="fas fa-check"></i> Access to premium content</li>
+                        <li><i class="fas fa-check"></i> Ad-free experience</li>
+                        <li><i class="fas fa-check"></i> Early access to new features</li>
+                    </ul>
+                    <button class="plan-btn" data-plan="monthly">Choose Plan</button>
+                </div>
+                
+                <div class="plan recommended">
+                    <div class="recommended-badge">Best Value</div>
+                    <h3>Yearly</h3>
+                    <div class="price">$99.99<span>/year</span></div>
+                    <ul class="features">
+                        <li><i class="fas fa-check"></i> All monthly features</li>
+                        <li><i class="fas fa-check"></i> Save 16%</li>
+                        <li><i class="fas fa-check"></i> Exclusive badges</li>
+                    </ul>
+                    <button class="plan-btn" data-plan="yearly">Choose Plan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="comments.js"></script>
+    <script src="ratings.js"></script>
 </body>
 </html>

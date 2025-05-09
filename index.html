@@ -6,297 +6,87 @@
     <title>Itemku - Login</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #6c5ce7;
-            --primary-dark: #5649c0;
-            --accent-color: #fd79a8;
-            --dark-color: #2d3436;
-            --light-color: #f5f6fa;
-            --gray-color: #636e72;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        body {
-            background-color: var(--light-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-image: linear-gradient(135deg, rgba(108, 92, 231, 0.1) 0%, rgba(253, 121, 168, 0.1) 100%);
-        }
-
-        .login-container {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 450px;
-            padding: 2.5rem;
-            text-align: center;
-        }
-
-        .logo {
-            margin-bottom: 1.5rem;
-            color: var(--primary-color);
-            font-size: 2.5rem;
-        }
-
-        h1 {
-            color: var(--dark-color);
-            margin-bottom: 1rem;
-            font-size: 1.8rem;
-        }
-
-        .subtitle {
-            color: var(--gray-color);
-            margin-bottom: 2rem;
-            font-size: 0.95rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-            text-align: left;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--dark-color);
-            font-weight: 500;
-        }
-
-        input {
-            width: 100%;
-            padding: 0.9rem 1.2rem;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        input:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
-            outline: none;
-        }
-
-        .login-btn {
-            width: 100%;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 1rem;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 0.5rem;
-        }
-
-        .login-btn:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
-        }
-
-        .switch-form {
-            margin-top: 1.5rem;
-            color: var(--gray-color);
-            font-size: 0.9rem;
-        }
-
-        .switch-form a {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .switch-form a:hover {
-            text-decoration: underline;
-        }
-
-        .error-message {
-            color: #e74c3c;
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
-            display: none;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="login-container">
-        <div class="logo">
-            <i class="fas fa-store"></i>
-        </div>
-        <h1>Welcome to Itemku</h1>
-        <p class="subtitle">Please login to access your dashboard</p>
-        
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" placeholder="Enter your username" required>
+    <div class="auth-container" id="authContainer">
+        <!-- Login Form -->
+        <div class="login-container">
+            <div class="logo">
+                <i class="fas fa-store"></i>
             </div>
+            <h1>Welcome to Itemku</h1>
+            <p class="subtitle">Please login to access your dashboard</p>
             
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" placeholder="Enter your password" required>
-                <div class="error-message" id="errorMessage"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter your username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                    <i class="fas fa-eye password-toggle" id="togglePassword"></i>
+                    <div class="message error-message" id="loginErrorMessage"></div>
+                </div>
+                
+                <button type="submit" class="auth-btn" id="loginBtn">
+                    <span>Login</span>
+                    <div class="spinner"></div>
+                </button>
+            </form>
+            
+            <div class="switch-form">
+                Don't have an account? <a href="#" id="showRegister">Register</a>
             </div>
-            
-            <button type="submit" class="login-btn">Login</button>
-        </form>
-        
-        <div class="switch-form">
-            Don't have an account? <a href="#" id="showRegister">Register</a>
         </div>
-    </div>
 
-    <!-- Register Form (hidden by default) -->
-    <div class="login-container" id="registerContainer" style="display: none;">
-        <div class="logo">
-            <i class="fas fa-user-plus"></i>
-        </div>
-        <h1>Create Account</h1>
-        <p class="subtitle">Join our platform today</p>
-        
-        <form id="registerForm">
-            <div class="form-group">
-                <label for="regUsername">Username</label>
-                <input type="text" id="regUsername" placeholder="Choose a username" required>
+        <!-- Register Form -->
+        <div class="register-container">
+            <div class="logo">
+                <i class="fas fa-user-plus"></i>
             </div>
+            <h1>Create Account</h1>
+            <p class="subtitle">Join our platform today</p>
             
-            <div class="form-group">
-                <label for="regPassword">Password</label>
-                <input type="password" id="regPassword" placeholder="Create a password" required>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="regUsername">Username</label>
+                    <input type="text" id="regUsername" placeholder="Choose a username" required minlength="4">
+                </div>
+                
+                <div class="form-group">
+                    <label for="regPassword">Password</label>
+                    <input type="password" id="regPassword" placeholder="Create a password" required minlength="6">
+                    <i class="fas fa-eye password-toggle" id="toggleRegPassword"></i>
+                    <div class="password-strength">
+                        <div class="password-strength-fill" id="passwordStrength"></div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="regConfirmPassword">Confirm Password</label>
+                    <input type="password" id="regConfirmPassword" placeholder="Confirm your password" required>
+                    <i class="fas fa-eye password-toggle" id="toggleRegConfirmPassword"></i>
+                    <div class="message error-message" id="regErrorMessage"></div>
+                    <div class="message success-message" id="regSuccessMessage"></div>
+                </div>
+                
+                <button type="submit" class="auth-btn" id="registerBtn">
+                    <span>Register</span>
+                    <div class="spinner"></div>
+                </button>
+            </form>
+            
+            <div class="switch-form">
+                Already have an account? <a href="#" id="showLogin">Login</a>
             </div>
-            
-            <div class="form-group">
-                <label for="regConfirmPassword">Confirm Password</label>
-                <input type="password" id="regConfirmPassword" placeholder="Confirm your password" required>
-                <div class="error-message" id="regErrorMessage"></div>
-            </div>
-            
-            <button type="submit" class="login-btn">Register</button>
-        </form>
-        
-        <div class="switch-form">
-            Already have an account? <a href="#" id="showLogin">Login</a>
         </div>
     </div>
 
     <script src="user.js"></script>
     <script src="premium.js"></script>
-    <script>
-        // Toggle between login and register forms
-        document.getElementById('showRegister').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('loginForm').parentElement.style.display = 'none';
-            document.getElementById('registerContainer').style.display = 'block';
-        });
-
-        document.getElementById('showLogin').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('registerContainer').style.display = 'none';
-            document.getElementById('loginForm').parentElement.style.display = 'block';
-        });
-
-        // Login functionality
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const errorElement = document.getElementById('errorMessage');
-
-            // Check in premium users first
-            let user = premiumUsers.find(u => u.username === username && u.password === password);
-            let isPremium = false;
-
-            if (user) {
-                isPremium = true;
-            } else {
-                // Check in regular users
-                user = users.find(u => u.username === username && u.password === password);
-            }
-
-            if (user) {
-                errorElement.style.display = 'none';
-                // Store user data in session
-                sessionStorage.setItem('currentUser', JSON.stringify({
-                    username: user.username,
-                    isPremium: isPremium
-                }));
-                // Redirect to dashboard
-                window.location.href = 'dashboard.html';
-            } else {
-                errorElement.textContent = 'Invalid username or password';
-                errorElement.style.display = 'block';
-            }
-        });
-
-        // Registration functionality
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const username = document.getElementById('regUsername').value;
-            const password = document.getElementById('regPassword').value;
-            const confirmPassword = document.getElementById('regConfirmPassword').value;
-            const errorElement = document.getElementById('regErrorMessage');
-
-            // Validate passwords match
-            if (password !== confirmPassword) {
-                errorElement.textContent = 'Passwords do not match';
-                errorElement.style.display = 'block';
-                return;
-            }
-
-            // Check if username exists
-            const userExists = users.find(u => u.username === username) || 
-                              premiumUsers.find(u => u.username === username);
-
-            if (userExists) {
-                errorElement.textContent = 'Username already exists';
-                errorElement.style.display = 'block';
-                return;
-            }
-
-            // Add new user
-            users.push({
-                username: username,
-                password: password
-            });
-
-            // Update localStorage
-            localStorage.setItem('itemkuUsers', JSON.stringify(users));
-
-            // Show success and switch to login
-            errorElement.textContent = 'Registration successful! Please login';
-            errorElement.style.color = '#2ecc71';
-            errorElement.style.display = 'block';
-
-            // Clear form
-            document.getElementById('regUsername').value = '';
-            document.getElementById('regPassword').value = '';
-            document.getElementById('regConfirmPassword').value = '';
-
-            // Auto switch to login after 2 seconds
-            setTimeout(() => {
-                document.getElementById('registerContainer').style.display = 'none';
-                document.getElementById('loginForm').parentElement.style.display = 'block';
-                errorElement.style.display = 'none';
-            }, 2000);
-        });
-
-        // Initialize users from localStorage if available
-        if (localStorage.getItem('itemkuUsers')) {
-            users = JSON.parse(localStorage.getItem('itemkuUsers'));
-        }
-    </script>
+    <script src="auth.js"></script>
 </body>
 </html>

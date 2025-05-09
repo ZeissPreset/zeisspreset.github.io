@@ -1,53 +1,59 @@
+// script.js - Video and view counter functionality
 document.addEventListener('DOMContentLoaded', function() {
+    // Only initialize if on dashboard page
+    if (!document.querySelector('.dashboard')) return;
+
     // View Counter System
     class ViewCounter {
         constructor() {
-            this.storageKey = 'itemkuViews';
-            this.totalViewsKey = 'itemkuTotalViews';
+            this.currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
             this.initializeCounters();
             this.updateAllViewCounts();
             this.setupViewButtons();
         }
         
         initializeCounters() {
-            if (!localStorage.getItem(this.storageKey)) {
-                localStorage.setItem(this.storageKey, JSON.stringify({}));
+            if (!localStorage.getItem('contentData')) {
+                const initialContentData = {
+                    'itemku1': { views: 0, comments: [], ratings: [] },
+                    'itemku2': { views: 0, comments: [], ratings: [] },
+                    'itemku3': { views: 0, comments: [], ratings: [] }
+                };
+                localStorage.setItem('contentData', JSON.stringify(initialContentData));
             }
-            if (!localStorage.getItem(this.totalViewsKey)) {
-                localStorage.setItem(this.totalViewsKey, '0');
-            }
-        }
-        
-        getContentViews() {
-            return JSON.parse(localStorage.getItem(this.storageKey)) || {};
         }
         
         getTotalViews() {
-            return parseInt(localStorage.getItem(this.totalViewsKey)) || 0;
+            const contentData = JSON.parse(localStorage.getItem('contentData'));
+            return Object.values(contentData).reduce((total, content) => total + content.views, 0);
         }
         
         incrementView(contentId) {
-            const sessionKey = `viewed_${contentId}_${sessionStorage.getItem('sessionId')}`;
+            if (!this.currentUser) return false;
+
+            const userViewKey = `viewed_${contentId}_${this.currentUser.username}`;
             
-            if (sessionStorage.getItem(sessionKey)) {
+            if (localStorage.getItem(userViewKey)) {
                 return false;
             }
             
-            const views = this.getContentViews();
-            views[contentId] = (views[contentId] || 0) + 1;
-            localStorage.setItem(this.storageKey, JSON.stringify(views));
+            // Update view count in contentData
+            const contentData = JSON.parse(localStorage.getItem('contentData'));
+            if (!contentData[contentId]) {
+                contentData[contentId] = { views: 0, comments: [], ratings: [] };
+            }
+            contentData[contentId].views++;
+            localStorage.setItem('contentData', JSON.stringify(contentData));
             
-            const totalViews = this.getTotalViews() + 1;
-            localStorage.setItem(this.totalViewsKey, totalViews.toString());
-            
-            sessionStorage.setItem(sessionKey, 'true');
+            // Mark as viewed by this user
+            localStorage.setItem(userViewKey, 'true');
             
             return true;
         }
         
         getViewCount(contentId) {
-            const views = this.getContentViews();
-            return views[contentId] || 0;
+            const contentData = JSON.parse(localStorage.getItem('contentData'));
+            return contentData[contentId]?.views || 0;
         }
         
         updateViewCount(contentId, count) {
@@ -65,9 +71,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         updateAllViewCounts() {
-            const views = this.getContentViews();
-            for (const contentId in views) {
-                this.updateViewCount(contentId, views[contentId]);
+            const contentData = JSON.parse(localStorage.getItem('contentData'));
+            for (const contentId in contentData) {
+                this.updateViewCount(contentId, contentData[contentId].views);
             }
             this.updateTotalViewsCount();
         }
@@ -121,15 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Initialize session ID
-    if (!sessionStorage.getItem('sessionId')) {
-        sessionStorage.setItem('sessionId', Math.random().toString(36).substr(2, 9));
-    }
-    
-    // Initialize View Counter
-    const viewCounter = new ViewCounter();
-    
-    // Video Player Functionality (same as before)
+    // Video Player Functionality
     class VideoPlayer {
         constructor() {
             this.initializePlayers();
@@ -216,8 +214,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Initialize systems
+    const viewCounter = new ViewCounter();
     const videoPlayers = new VideoPlayer();
     
+    // Lazy load videos when they come into view
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
