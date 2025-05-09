@@ -1,13 +1,13 @@
 // Premium/developer users data
 const premiumUsers = [
     {
-        username: "admin",
-        password: "admin123",
+        username: "Zeiss",
+        password: "Zenn1221",
         role: "admin"
     },
     {
-        username: "developer",
-        password: "dev123",
+        username: "Zeiss",
+        password: "Zenn1221",
         role: "developer"
     },
     {
