@@ -6,7 +6,6 @@ let config = {
     autoIPBlocking: true,
     requestThreshold: 100, // Requests per minute
     blockDuration: 60, // Minutes
-    monitoring: false
 };
 
 // System State
@@ -17,7 +16,8 @@ let state = {
     blockedIPs: [],
     requestLogs: [],
     requestTimestamps: {},
-    ipThreatLevel: {}
+    ipThreatLevel: {},
+    ipRequestCounts: {}
 };
 
 // DOM Elements
@@ -28,9 +28,6 @@ const elements = {
     blockedIps: document.getElementById('blocked-ips'),
     requestLogs: document.getElementById('request-logs'),
     blockedIpList: document.getElementById('blocked-ip-list'),
-    startMonitoring: document.getElementById('start-monitoring'),
-    stopMonitoring: document.getElementById('stop-monitoring'),
-    clearLogs: document.getElementById('clear-logs'),
     ddosMeter: document.getElementById('ddos-meter'),
     bruteMeter: document.getElementById('brute-meter'),
     exploitMeter: document.getElementById('exploit-meter'),
@@ -43,7 +40,8 @@ const elements = {
     enableIpBlocking: document.getElementById('enable-ip-blocking'),
     requestThreshold: document.getElementById('request-threshold'),
     blockDuration: document.getElementById('block-duration'),
-    saveSettings: document.getElementById('save-settings')
+    saveSettings: document.getElementById('save-settings'),
+    clearBlocked: document.getElementById('clear-blocked')
 };
 
 // Initialize the system
@@ -51,6 +49,7 @@ function init() {
     loadSettings();
     setupEventListeners();
     updateUI();
+    startRequestMonitoring();
 }
 
 // Load settings from localStorage
@@ -77,48 +76,27 @@ function saveSettings() {
     config.blockDuration = parseInt(elements.blockDuration.value);
     
     localStorage.setItem('securityConfig', JSON.stringify(config));
+    logEvent('SYSTEM', 'Security settings updated');
     alert('Settings saved successfully!');
 }
 
 // Setup event listeners
 function setupEventListeners() {
-    elements.startMonitoring.addEventListener('click', startMonitoring);
-    elements.stopMonitoring.addEventListener('click', stopMonitoring);
-    elements.clearLogs.addEventListener('click', clearLogs);
     elements.saveSettings.addEventListener('click', saveSettings);
+    elements.clearBlocked.addEventListener('click', clearBlockedIPs);
 }
 
-// Start monitoring requests
-function startMonitoring() {
-    config.monitoring = true;
-    elements.startMonitoring.disabled = true;
-    elements.stopMonitoring.disabled = false;
-    
-    // Simulate incoming requests (in a real system, this would be actual requests)
-    simulateRequests();
-    
-    logEvent('SYSTEM', 'Monitoring started');
-}
-
-// Stop monitoring
-function stopMonitoring() {
-    config.monitoring = false;
-    elements.startMonitoring.disabled = false;
-    elements.stopMonitoring.disabled = true;
-    
-    logEvent('SYSTEM', 'Monitoring stopped');
-}
-
-// Clear all logs
-function clearLogs() {
-    state.requestLogs = [];
-    updateRequestLogs();
-    logEvent('SYSTEM', 'Logs cleared');
+// Clear all blocked IPs
+function clearBlockedIPs() {
+    state.blockedIPs = [];
+    state.ipThreatLevel = {};
+    logEvent('SYSTEM', 'All blocked IPs cleared');
+    updateUI();
 }
 
 // Log an event
 function logEvent(source, message) {
-    const timestamp = new Date().toISOString();
+    const timestamp = new Date().toLocaleTimeString();
     const logEntry = `[${timestamp}] [${source}] ${message}`;
     
     state.requestLogs.push(logEntry);
@@ -152,103 +130,21 @@ function updateUI() {
     }
 }
 
-// Simulate incoming requests (for demonstration)
-function simulateRequests() {
-    if (!config.monitoring) return;
+// Start monitoring real requests
+function startRequestMonitoring() {
+    // This would be replaced with actual server-side code in a real implementation
+    // For this client-side demo, we'll simulate receiving requests from the server
     
-    // Generate a random number of requests (0-5)
-    const requestCount = Math.floor(Math.random() * 6);
+    // In a real implementation, you would:
+    // 1. Set up a WebSocket connection to receive real-time request data
+    // 2. Or use Server-Sent Events (SSE)
+    // 3. Or poll an API endpoint periodically
     
-    for (let i = 0; i < requestCount; i++) {
-        setTimeout(() => {
-            if (!config.monitoring) return;
-            
-            // Generate a random IP
-            const ip = generateRandomIP();
-            processRequest(ip);
-        }, Math.random() * 2000);
-    }
-    
-    // Occasionally simulate an attack
-    if (Math.random() < 0.1) {
-        simulateAttack();
-    }
-    
-    // Continue simulating
-    setTimeout(simulateRequests, 2000);
+    logEvent('SYSTEM', 'Protection system activated');
 }
 
-// Simulate an attack (DDoS, brute force, or exploit)
-function simulateAttack() {
-    if (!config.monitoring) return;
-    
-    const attackType = ['ddos', 'brute', 'exploit'][Math.floor(Math.random() * 3)];
-    const ip = generateRandomIP();
-    
-    switch (attackType) {
-        case 'ddos':
-            simulateDDoS(ip);
-            break;
-        case 'brute':
-            simulateBruteForce(ip);
-            break;
-        case 'exploit':
-            simulateExploit(ip);
-            break;
-    }
-}
-
-// Simulate a DDoS attack from a single IP
-function simulateDDoS(ip) {
-    const requestCount = 50 + Math.floor(Math.random() * 50);
-    
-    logEvent('THREAT', `Potential DDoS detected from ${ip} (${requestCount} requests)`);
-    
-    for (let i = 0; i < requestCount; i++) {
-        setTimeout(() => {
-            if (!config.monitoring) return;
-            processRequest(ip, true);
-        }, i * 10);
-    }
-    
-    // Update threat meter
-    updateThreatMeter('ddos', 80 + Math.floor(Math.random() * 20));
-}
-
-// Simulate a brute force attack
-function simulateBruteForce(ip) {
-    logEvent('THREAT', `Brute force attempt detected from ${ip}`);
-    
-    for (let i = 0; i < 10; i++) {
-        setTimeout(() => {
-            if (!config.monitoring) return;
-            processRequest(ip, true);
-        }, i * 300);
-    }
-    
-    // Update threat meter
-    updateThreatMeter('brute', 70 + Math.floor(Math.random() * 30));
-}
-
-// Simulate an exploit attempt
-function simulateExploit(ip) {
-    const exploits = [
-        'SQL injection attempt',
-        'XSS attempt',
-        'Remote code execution attempt',
-        'Path traversal attempt'
-    ];
-    const exploit = exploits[Math.floor(Math.random() * exploits.length)];
-    
-    logEvent('THREAT', `${exploit} detected from ${ip}`);
-    processRequest(ip, true);
-    
-    // Update threat meter
-    updateThreatMeter('exploit', 60 + Math.floor(Math.random() * 40));
-}
-
-// Process an incoming request
-function processRequest(ip, isThreat = false) {
+// Process an incoming request (to be called from server-side)
+function processRequest(ip, requestData = {}) {
     state.totalRequests++;
     
     // Check if IP is blocked
@@ -256,16 +152,18 @@ function processRequest(ip, isThreat = false) {
         state.blockedRequests++;
         logEvent('BLOCKED', `Request from blocked IP: ${ip}`);
         updateUI();
-        return;
+        return { blocked: true, reason: 'IP blocked' };
     }
     
-    // Track request timestamps for rate limiting
+    // Initialize tracking for this IP if not exists
     if (!state.requestTimestamps[ip]) {
         state.requestTimestamps[ip] = [];
+        state.ipRequestCounts[ip] = 0;
     }
     
     const now = Date.now();
     state.requestTimestamps[ip].push(now);
+    state.ipRequestCounts[ip]++;
     
     // Clean up old timestamps (older than 1 minute)
     state.requestTimestamps[ip] = state.requestTimestamps[ip].filter(
@@ -276,8 +174,9 @@ function processRequest(ip, isThreat = false) {
     const requestRate = state.requestTimestamps[ip].length;
     const isRateLimited = requestRate > config.requestThreshold;
     
-    // Determine if request is malicious
-    let isMalicious = isThreat || isRateLimited;
+    // Analyze request for threats
+    const threatAnalysis = analyzeRequest(requestData);
+    const isMalicious = isRateLimited || threatAnalysis.isThreat;
     
     // Update threat level for IP
     if (!state.ipThreatLevel[ip]) {
@@ -285,8 +184,17 @@ function processRequest(ip, isThreat = false) {
     }
     
     if (isMalicious) {
-        state.ipThreatLevel[ip] += 10;
+        state.ipThreatLevel[ip] += threatAnalysis.threatScore || 10;
         state.activeThreats++;
+        
+        // Update relevant threat meter
+        if (threatAnalysis.threatType === 'ddos') {
+            updateThreatMeter('ddos', Math.min(100, state.ipThreatLevel[ip]));
+        } else if (threatAnalysis.threatType === 'brute') {
+            updateThreatMeter('brute', Math.min(100, state.ipThreatLevel[ip]));
+        } else if (threatAnalysis.threatType === 'exploit') {
+            updateThreatMeter('exploit', Math.min(100, state.ipThreatLevel[ip]));
+        }
     } else {
         state.ipThreatLevel[ip] = Math.max(0, state.ipThreatLevel[ip] - 1);
     }
@@ -294,7 +202,7 @@ function processRequest(ip, isThreat = false) {
     // Block IP if threat level is high and auto-blocking is enabled
     if (config.autoIPBlocking && state.ipThreatLevel[ip] >= 30 && !state.blockedIPs.includes(ip)) {
         state.blockedIPs.push(ip);
-        logEvent('BLOCKED', `IP ${ip} blocked automatically due to high threat level`);
+        logEvent('BLOCKED', `IP ${ip} blocked automatically (Threat level: ${state.ipThreatLevel[ip]})`);
         
         // Unblock after configured duration
         setTimeout(() => {
@@ -307,12 +215,63 @@ function processRequest(ip, isThreat = false) {
     // Log the request
     if (isMalicious) {
         state.blockedRequests++;
-        logEvent('BLOCKED', `Malicious request blocked from ${ip}`);
+        logEvent('BLOCKED', `Malicious request blocked from ${ip} (${threatAnalysis.reason || 'High request rate'})`);
+        return { blocked: true, reason: threatAnalysis.reason || 'High request rate' };
     } else {
-        logEvent('REQUEST', `Request from ${ip}`);
+        logEvent('REQUEST', `Request from ${ip}${requestData.path ? ` to ${requestData.path}` : ''}`);
+        return { blocked: false };
     }
     
     updateUI();
+}
+
+// Analyze a request for potential threats
+function analyzeRequest(requestData) {
+    const result = {
+        isThreat: false,
+        threatType: null,
+        threatScore: 0,
+        reason: null
+    };
+    
+    // Check for DDoS patterns
+    if (config.ddosProtection) {
+        // In a real system, you would analyze request patterns here
+    }
+    
+    // Check for brute force patterns
+    if (config.bruteForceProtection && requestData.path) {
+        const bruteForcePaths = ['/login', '/admin', '/wp-login.php'];
+        if (bruteForcePaths.includes(requestData.path.toLowerCase())) {
+            result.isThreat = true;
+            result.threatType = 'brute';
+            result.threatScore = 15;
+            result.reason = 'Brute force attempt';
+        }
+    }
+    
+    // Check for exploit patterns
+    if (config.exploitProtection && requestData.query) {
+        const exploitPatterns = [
+            /select.+from/i,
+            /union.+select/i,
+            /<script>/i,
+            /eval\(/i,
+            /\.\.\// // Path traversal
+        ];
+        
+        for (const pattern of exploitPatterns) {
+            if (pattern.test(JSON.stringify(requestData.query))) {
+                result.isThreat = true;
+                result.threatType = 'exploit';
+                result.threatScore = 20;
+                result.reason = 'Potential exploit attempt';
+                break;
+            }
+        }
+    }
+    
+    return result;
 }
 
 // Update threat meter display
@@ -338,10 +297,13 @@ function updateThreatMeter(type, value) {
     }
 }
 
-// Generate a random IP address
-function generateRandomIP() {
-    return `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
-}
-
 // Initialize the system when the page loads
 window.addEventListener('DOMContentLoaded', init);
+
+// Export functions for server-side use (in a real implementation)
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        processRequest,
+        analyzeRequest
+    };
+}
