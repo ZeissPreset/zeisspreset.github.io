@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Request Monitor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .stats {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        .stat-item {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        .stat-label {
+            font-weight: bold;
+            color: #555;
+        }
+        #requestList {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .request-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            font-family: monospace;
+        }
+        #statusMessage {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Real-Time Request Monitor</h1>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-label">Total Requests:</span> 
+                <span id="totalRequests">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Requests This Minute:</span> 
+                <span id="requestsPerMinute">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Requests Per Second:</span> 
+                <span id="requestsPerSecond">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Possible DDoS:</span> 
+                <span id="ddosStatus">No</span>
+            </div>
+        </div>
+        
+        <h3>Recent Requests:</h3>
+        <div id="requestList"></div>
+        
+        <div id="statusMessage"></div>
+    </div>
+
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
+    <script>
+        // Initialize EmailJS with your credentials
+        emailjs.init('J_La1nyTWHkQto5Ju');
+        
+        // Request tracking variables
+        let totalRequests = 0;
+        let requestsThisMinute = 0;
+        let requestsThisSecond = 0;
+        let requestTimestamps = [];
+        let lastEmailSentTime = 0;
+        
+        // DOM elements
+        const totalRequestsEl = document.getElementById('totalRequests');
+        const rpmEl = document.getElementById('requestsPerMinute');
+        const rpsEl = document.getElementById('requestsPerSecond');
+        const ddosEl = document.getElementById('ddosStatus');
+        const requestListEl = document.getElementById('requestList');
+        const statusEl = document.getElementById('statusMessage');
+        
+        // Check for DDoS condition (more than 5 requests per second)
+        function checkForDDoS() {
+            const now = Date.now();
+            const recentRequests = requestTimestamps.filter(t => now - t < 1000);
+            requestsThisSecond = recentRequests.length;
+            
+            if (requestsThisSecond > 5) {
+                ddosEl.textContent = "YES (" + requestsThisSecond + "/sec)";
+                ddosEl.style.color = "red";
+                return true;
+            } else {
+                ddosEl.textContent = "No";
+                ddosEl.style.color = "green";
+                return false;
+            }
+        }
+        
+        // Format date for email
+        function formatDate() {
+            const now = new Date();
+            return now.toLocaleString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            });
+        }
+        
+        // Send email notification
+        function sendRequestEmail() {
+            const now = Date.now();
+            // Throttle emails to at most 1 per 10 seconds
+            if (now - lastEmailSentTime < 10000) return;
+            
+            lastEmailSentTime = now;
+            
+            const isDDoS = checkForDDoS();
+            const webStatus = isDDoS ? "Under High Load" : "Normal";
+            
+            const templateParams = {
+                to_email: 'storezenn122@gmail.com',
+                subject: 'New Request Notification - ' + (isDDoS ? 'POSSIBLE DDoS!' : 'Normal traffic'),
+                total_requests: totalRequests,
+                user_agent: navigator.userAgent,
+                date: formatDate(),
+                status: webStatus,
+                ddos: isDDoS ? "YES" : "NO",
+                requests_per_second: requestsThisSecond + " requests/second"
+            };
+            
+            statusEl.textContent = "Sending notification...";
+            statusEl.className = "";
+            statusEl.style.display = "block";
+            
+            emailjs.send('service_6clcg16', 'template_e01nmcg', templateParams)
+                .then(() => {
+                    statusEl.textContent = "Notification sent successfully!";
+                    statusEl.className = "success";
+                })
+                .catch((error) => {
+                    statusEl.textContent = "Failed to send notification: " + error;
+                    statusEl.className = "error";
+                    console.error('EmailJS error:', error);
+                });
+        }
+        
+        // Track a new request
+        function trackRequest() {
+            totalRequests++;
+            requestsThisMinute++;
+            const now = Date.now();
+            requestTimestamps.push(now);
+            
+            // Update UI
+            totalRequestsEl.textContent = totalRequests;
+            rpmEl.textContent = requestsThisMinute;
+            
+            // Check for DDoS
+            checkForDDoS();
+            rpsEl.textContent = requestsThisSecond;
+            
+            // Add to request list
+            const requestItem = document.createElement('div');
+            requestItem.className = 'request-item';
+            requestItem.textContent = `[${new Date(now).toLocaleTimeString()}] Request #${totalRequests} - ${navigator.userAgent.substring(0, 50)}...`;
+            requestListEl.prepend(requestItem);
+            
+            // Send email
+            sendRequestEmail();
+        }
+        
+        // Reset minute counter every minute
+        setInterval(() => {
+            requestsThisMinute = 0;
+            rpmEl.textContent = requestsThisMinute;
+        }, 60000);
+        
+        // Clean up old timestamps
+        setInterval(() => {
+            const now = Date.now();
+            requestTimestamps = requestTimestamps.filter(t => now - t < 60000);
+        }, 5000);
+        
+        // Track actual page visits (runs when someone loads the page)
+        window.addEventListener('load', trackRequest);
+        
+        // For demonstration: Also track clicks (optional)
+        document.addEventListener('click', () => {
+            trackRequest();
+        });
+    </script>
+</body>
+  </html>
