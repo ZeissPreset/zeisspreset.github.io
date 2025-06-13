@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Codespaces Keep-Alive</title>
+    <style>
+        :root {
+            --primary: #0366d6;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fafbfc;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 20px;
+            border: 1px solid #e1e4e8;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        h1 {
+            color: var(--primary);
+            border-bottom: 1px solid #eaecef;
+            padding-bottom: 0.3em;
+            margin-top: 0;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px 15px;
+            margin: 8px 0 15px;
+            box-sizing: border-box;
+            border: 1px solid #d1d5da;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+        button {
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            margin: 8px 5px 8px 0;
+            cursor: pointer;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 15px;
+        }
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        button.stop {
+            background-color: var(--danger);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        .status-icon {
+            font-size: 20px;
+        }
+        .active {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+        .inactive {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+        .pending {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: var(--warning);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+        .log {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e1e4e8;
+            padding: 15px;
+            background-color: #f6f8fa;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 14px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .log-entry {
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eaecef;
+            display: flex;
+            gap: 10px;
+        }
+        .log-time {
+            color: #6a737d;
+            flex-shrink: 0;
+        }
+        .success {
+            color: var(--success);
+        }
+        .error {
+            color: var(--danger);
+        }
+        .warning {
+            color: var(--warning);
+        }
+        .flex-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        .traffic-options {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(3, 102, 214, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(3, 102, 214, 0.2);
+        }
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid #e1e4e8;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 5px 0;
+        }
+        .stat-label {
+            font-size: 13px;
+            color: #586069;
+        }
+        .timer-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .timer {
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 10px 0;
+            transition: color 0.3s;
+        }
+        .timer-warning {
+            color: var(--warning);
+        }
+        .timer-danger {
+            color: var(--danger);
+        }
+        .progress-container {
+            height: 10px;
+            background-color: #e1e4e8;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .checkbox-group {
+            margin: 12px 0;
+            display: flex;
+            align-items: center;
+        }
+        .checkbox-group input {
+            width: auto;
+            margin-right: 10px;
+            margin-bottom: 0;
+        }
+        .blink {
+            animation: blink-animation 1s steps(2, start) infinite;
+        }
+        @keyframes blink-animation {
+            to {
+                opacity: 0.5;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GitHub Codespaces Keep-Alive</h1>
+        <p>Advanced tool to keep your Codespaces active with real traffic every minute</p>
+        
+        <label for="codespaceUrl">Codespace URL:</label>
+        <input type="url" id="codespaceUrl" placeholder="https://your-codespace-3000.preview.app.github.dev" required>
+        
+        <div class="traffic-options">
+            <h3>Traffic Types:</h3>
+            <div class="checkbox-group">
+                <input type="checkbox" id="enablePing" checked>
+                <label for="enablePing">Basic Ping (HEAD request)</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="enableApi" checked>
+                <label for="enableApi">API Requests</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="enablePageLoad" checked>
+                <label for="enablePageLoad">Full Page Load</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="enableAssets" checked>
+                <label for="enableAssets">Assets Loading</label>
+            </div>
+        </div>
+
+        <div class="flex-row">
+            <button id="startBtn">Start Traffic</button>
+            <button id="stopBtn" class="stop" disabled>Stop</button>
+        </div>
+        
+        <div id="status" class="status inactive">
+            <span class="status-icon">✖</span>
+            <span>Status: Inactive</span>
+        </div>
+        
+        <div class="timer-container">
+            <div>Next request in:</div>
+            <div class="timer" id="timer">01:00</div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+        
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-value" id="requestCount">0</div>
+                <div class="stat-label">Total Requests</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="successCount">0</div>
+                <div class="stat-label">Success</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="errorCount">0</div>
+                <div class="stat-label">Failed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="uptimeCount">0</div>
+                <div class="stat-label">Minutes Active</div>
+            </div>
+        </div>
+        
+        <h3>Activity Log:</h3>
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const codespaceUrl = document.getElementById('codespaceUrl');
+        const statusDiv = document.getElementById('status');
+        const statusIcon = statusDiv.querySelector('.status-icon');
+        const statusText = statusDiv.querySelector('span:last-child');
+        const logDiv = document.getElementById('log');
+        const enablePing = document.getElementById('enablePing');
+        const enableApi = document.getElementById('enableApi');
+        const enablePageLoad = document.getElementById('enablePageLoad');
+        const enableAssets = document.getElementById('enableAssets');
+        const requestCount = document.getElementById('requestCount');
+        const successCount = document.getElementById('successCount');
+        const errorCount = document.getElementById('errorCount');
+        const uptimeCount = document.getElementById('uptimeCount');
+        const timerDisplay = document.getElementById('timer');
+        const progressBar = document.getElementById('progressBar');
+
+        // Control variables
+        let isActive = false;
+        let trafficInterval;
+        let countdownInterval;
+        let totalRequests = 0;
+        let successRequests = 0;
+        let errorRequests = 0;
+        let uptimeMinutes = 0;
+        let countdownSeconds = 60;
+        let isRequestPending = false;
+
+        // Extended list of common assets
+        const commonAssets = [
+            // Root files
+            '/favicon.ico',
+            '/robots.txt',
+            '/sitemap.xml',
+            '/humans.txt',
+            '/manifest.json',
+            '/service-worker.js',
+            
+            // Common JS paths
+            '/assets/js/main.js',
+            '/assets/js/app.js',
+            '/js/main.js',
+            '/js/app.js',
+            '/static/js/bundle.js',
+            '/static/js/main.js',
+            '/dist/js/app.js',
+            '/build/js/main.js',
+            '/scripts/main.js',
+            
+            // Common CSS paths
+            '/assets/css/main.css',
+            '/assets/css/styles.css',
+            '/css/main.css',
+            '/css/styles.css',
+            '/static/css/styles.css',
+            '/static/css/main.css',
+            '/dist/css/app.css',
+            '/build/css/main.css',
+            '/styles/main.css',
+            
+            // Images
+            '/images/logo.png',
+            '/images/icon.png',
+            '/img/header.jpg',
+            '/img/logo.svg',
+            '/assets/images/logo.png',
+            '/static/images/icon.png',
+            '/favicons/favicon-32x32.png',
+            '/favicons/favicon-16x16.png',
+            '/apple-touch-icon.png',
+            
+            // Fonts
+            '/fonts/font.woff2',
+            '/fonts/font.woff',
+            '/assets/fonts/icomoon.woff',
+            '/static/fonts/roboto.woff2',
+            
+            // API endpoints
+            '/api/health',
+            '/api/status',
+            '/health',
+            '/status',
+            '/ping',
+            '/healthcheck',
+            '/ready',
+            '/live',
+            
+            // Configuration files
+            '/.env',
+            '/config.json',
+            '/package.json',
+            '/composer.json',
+            '/webpack.config.js',
+            
+            // Documentation
+            '/readme.md',
+            '/LICENSE',
+            '/CHANGELOG.md',
+            '/CONTRIBUTING.md'
+        ];
+
+        // Utility functions
+        function addLog(message, isSuccess = true) {
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry`;
+            
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'log-time';
+            timeSpan.textContent = `[${new Date().toLocaleTimeString()}]`;
+            
+            const messageSpan = document.createElement('span');
+            messageSpan.className = isSuccess ? 'success' : 'error';
+            messageSpan.textContent = message;
+            
+            logEntry.appendChild(timeSpan);
+            logEntry.appendChild(messageSpan);
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            
+            // Update counters
+            totalRequests++;
+            requestCount.textContent = totalRequests;
+            
+            if (isSuccess) {
+                successRequests++;
+                successCount.textContent = successRequests;
+            } else {
+                errorRequests++;
+                errorCount.textContent = errorRequests;
+            }
+        }
+
+        function updateStatus(message, state) {
+            statusText.textContent = `Status: ${message}`;
+            
+            // Remove all state classes
+            statusDiv.classList.remove('active', 'inactive', 'pending');
+            
+            // Add the appropriate class
+            if (state === 'active') {
+                statusDiv.classList.add('active');
+                statusIcon.textContent = '✓';
+            } else if (state === 'inactive') {
+                statusDiv.classList.add('inactive');
+                statusIcon.textContent = '✖';
+            } else if (state === 'pending') {
+                statusDiv.classList.add('pending');
+                statusIcon.textContent = '⏳';
+            }
+        }
+
+        function updateTimer(seconds) {
+            const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const secs = (seconds % 60).toString().padStart(2, '0');
+            timerDisplay.textContent = `${mins}:${secs}`;
+            
+            // Update progress bar
+            const progress = ((60 - seconds) / 60) * 100;
+            progressBar.style.width = `${progress}%`;
+            
+            // Change timer color when reaching certain thresholds
+            timerDisplay.classList.remove('timer-warning', 'timer-danger');
+            if (seconds <= 10 && seconds > 5) {
+                timerDisplay.classList.add('timer-warning');
+            } else if (seconds <= 5) {
+                timerDisplay.classList.add('timer-danger');
+                if (seconds <= 3) {
+                    timerDisplay.classList.add('blink');
+                }
+            } else {
+                timerDisplay.classList.remove('blink');
+            }
+            
+            // Special handling when timer reaches 00:00
+            if (seconds === 0 && isActive && !isRequestPending) {
+                updateStatus('Sending requests...', 'pending');
+                isRequestPending = true;
+                
+                // Add a small delay to allow status update to be visible
+                setTimeout(async () => {
+                    await runAllTraffic();
+                    isRequestPending = false;
+                    startCountdown();
+                }, 100);
+            }
+        }
+
+        function startCountdown() {
+            countdownSeconds = 60;
+            updateTimer(countdownSeconds);
+            
+            clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                countdownSeconds--;
+                updateTimer(countdownSeconds);
+                
+                if (countdownSeconds <= 0) {
+                    clearInterval(countdownInterval);
+                }
+            }, 1000);
+        }
+
+        // Request functions
+        async function makeBasicPing() {
+            try {
+                const url = codespaceUrl.value;
+                const response = await fetch(url, {
+                    method: 'HEAD',
+                    mode: 'no-cors',
+                    cache: 'no-store'
+                });
+                addLog(`HEAD request to ${url}`);
+                return true;
+            } catch (error) {
+                addLog(`HEAD request failed: ${error.message}`, false);
+                return false;
+            }
+        }
+
+        async function makeApiRequest() {
+            try {
+                // Try common API endpoints
+                const apiEndpoints = [
+                    '/api/health',
+                    '/api/status',
+                    '/health',
+                    '/status',
+                    '/ping',
+                    '/healthcheck'
+                ];
+                
+                let success = false;
+                
+                for (const endpoint of apiEndpoints) {
+                    const url = `${codespaceUrl.value}${endpoint}`;
+                    try {
+                        const response = await fetch(url, {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json'
+                            },
+                            cache: 'no-store'
+                        });
+                        
+                        if (response.ok) {
+                            addLog(`API request to ${url}`);
+                            success = true;
+                            break;
+                        }
+                    } catch (e) {
+                        continue;
+                    }
+                }
+                
+                if (!success) {
+                    addLog(`All API endpoints failed`, false);
+                }
+                
+                return success;
+            } catch (error) {
+                addLog(`API request error: ${error.message}`, false);
+                return false;
+            }
+        }
+
+        async function loadFullPage() {
+            try {
+                const url = codespaceUrl.value;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    cache: 'no-store'
+                });
+                
+                if (response.ok) {
+                    const text = await response.text();
+                    addLog(`Loaded page (${text.length} bytes)`);
+                    return true;
+                } else {
+                    addLog(`Page load failed: ${response.status}`, false);
+                    return false;
+                }
+            } catch (error) {
+                addLog(`Page load error: ${error.message}`, false);
+                return false;
+            }
+        }
+
+        async function loadAssets() {
+            try {
+                // Select 8 random assets to try
+                const shuffledAssets = [...commonAssets].sort(() => 0.5 - Math.random());
+                const selectedAssets = shuffledAssets.slice(0, 8);
+                
+                let successCount = 0;
+                
+                for (const asset of selectedAssets) {
+                    const url = `${codespaceUrl.value}${asset}`;
+                    try {
+                        const response = await fetch(url, {
+                            method: 'GET',
+                            cache: 'no-store'
+                        });
+                        
+                        if (response.ok) {
+                            successCount++;
+                        }
+                    } catch (e) {
+                        // Ignore missing assets
+                    }
+                }
+                
+                addLog(`Loaded ${successCount} of ${selectedAssets.length} assets`);
+                return successCount > 0;
+            } catch (error) {
+                addLog(`Assets load error: ${error.message}`, false);
+                return false;
+            }
+        }
+
+        // Main traffic function
+        async function runAllTraffic() {
+            if (!isActive) return;
+            
+            const results = [];
+            
+            if (enablePing.checked) {
+                results.push(await makeBasicPing());
+            }
+            
+            if (enableApi.checked) {
+                results.push(await makeApiRequest());
+            }
+            
+            if (enablePageLoad.checked) {
+                results.push(await loadFullPage());
+            }
+            
+            if (enableAssets.checked) {
+                results.push(await loadAssets());
+            }
+            
+            // Update status based on results
+            const allSuccess = results.every(r => r);
+            const lastUpdate = new Date().toLocaleTimeString();
+            
+            if (allSuccess) {
+                updateStatus(`Active - All requests succeeded (${lastUpdate})`, 'active');
+            } else if (results.some(r => r)) {
+                updateStatus(`Active - Partial success (${lastUpdate})`, 'active');
+            } else {
+                updateStatus(`Active - All requests failed (${lastUpdate})`, 'active');
+            }
+            
+            // Update uptime
+            uptimeMinutes++;
+            uptimeCount.textContent = uptimeMinutes;
+        }
+
+        // Control functions
+        function startTraffic() {
+            if (!codespaceUrl.value) {
+                alert('Please enter a valid Codespace URL');
+                return;
+            }
+            
+            isActive = true;
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            codespaceUrl.disabled = true;
+            
+            updateStatus('Starting traffic...', 'pending');
+            addLog('Starting traffic to Codespace (1 minute interval)');
+            
+            // Reset counters
+            totalRequests = 0;
+            successRequests = 0;
+            errorRequests = 0;
+            uptimeMinutes = 0;
+            requestCount.textContent = '0';
+            successCount.textContent = '0';
+            errorCount.textContent = '0';
+            uptimeCount.textContent = '0';
+            
+            // Save URL to localStorage
+            localStorage.setItem('lastCodespaceUrl', codespaceUrl.value);
+            
+            // Run immediately
+            runAllTraffic();
+            
+            // Set interval (60 seconds)
+            clearInterval(trafficInterval);
+            trafficInterval = setInterval(runAllTraffic, 60000);
+            
+            // Start countdown timer
+            startCountdown();
+        }
+
+        function stopTraffic() {
+            isActive = false;
+            clearInterval(trafficInterval);
+            clearInterval(countdownInterval);
+            
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            codespaceUrl.disabled = false;
+            
+            updateStatus('Traffic stopped', 'inactive');
+            addLog('All traffic stopped');
+            
+            // Reset timer display
+            timerDisplay.textContent = '01:00';
+            timerDisplay.classList.remove('timer-warning', 'timer-danger', 'blink');
+            progressBar.style.width = '0%';
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', startTraffic);
+        stopBtn.addEventListener('click', stopTraffic);
+
+        // Load last used URL
+        window.addEventListener('DOMContentLoaded', () => {
+            const lastUrl = localStorage.getItem('lastCodespaceUrl');
+            if (lastUrl) {
+                codespaceUrl.value = lastUrl;
+            }
+        });
+    </script>
+</body>
+</html>
